@@ -1,0 +1,1 @@
+A clean and simple Productivity & Info Hub project containing both Web (React) and Mobile (React Native + Expo) apps. Each app has its own README file inside its folder for setup and usage instructions. This repo showcases todo features, smooth navigation, and responsive UI across platforms.
