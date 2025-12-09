@@ -1,0 +1,98 @@
+/* ----------- Page Container ----------- */
+.weather-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ----------- Page Title ----------- */
+.weather-title {
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* ----------- Search Box ----------- */
+.weather-search-box {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap; /* responsive */
+}
+
+.weather-input {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+.weather-button {
+  padding: 10px 16px;
+  background-color: #4f46e5;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+}
+
+.weather-button:hover {
+  background-color: #3730a3;
+}
+
+/* ----------- Weather Card ----------- */
+.weather-card {
+  background-color: #ffffff;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ----------- Location Title ----------- */
+.weather-location {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+/* ----------- Main Weather Row ----------- */
+.weather-main {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.weather-icon {
+  width: 70px;
+  height: 70px;
+}
+
+.weather-temp {
+  font-size: 30px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.weather-condition {
+  font-size: 16px;
+  margin-top: 4px;
+}
+
+/* ----------- Details Section ----------- */
+.weather-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ----------- Info Text ----------- */
+.weather-info {
+  color: #555;
+}
+
+.weather-error {
+  color: red;
+}

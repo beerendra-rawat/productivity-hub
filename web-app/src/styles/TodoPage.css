@@ -1,0 +1,111 @@
+/* ----------- Page Layout ----------- */
+.todo-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.todo-title {
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* ----------- Input Row ----------- */
+.todo-input-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap; /* Makes responsive */
+}
+
+.todo-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 15px;
+}
+
+.todo-add-btn {
+  padding: 10px 16px;
+  background-color: #4f46e5;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.todo-add-btn:hover {
+  background-color: #4338ca;
+}
+
+/* ----------- Section Titles ----------- */
+.todo-section {
+  margin-bottom: 20px;
+}
+
+.todo-section-title {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.todo-empty {
+  color: #666;
+  font-size: 14px;
+}
+
+/* ----------- Todo Item (Flexbox Row) ----------- */
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f3f4f6;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap; /* responsive */
+}
+
+.todo-text {
+  flex: 1;
+  font-size: 15px;
+}
+
+.todo-text.completed {
+  text-decoration: line-through;
+  color: #6b7280;
+}
+
+/* ----------- Editing Input ----------- */
+.todo-edit-input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+}
+
+/* ----------- Buttons ----------- */
+.todo-btn {
+  padding: 6px 10px;
+  background: #e5e7eb;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.todo-btn:hover {
+  background: #d1d5db;
+}
+
+.todo-btn-secondary {
+  background: #e5e7eb;
+}
+
+.todo-btn-danger {
+  background: #ef4444;
+  color: white;
+}
+
+.todo-btn-danger:hover {
+  background: #dc2626;
+}

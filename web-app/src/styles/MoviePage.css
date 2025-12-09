@@ -1,0 +1,90 @@
+/* ---------- Page Layout ---------- */
+.movie-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.movie-title {
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* ---------- Search Input ---------- */
+.movie-search {
+  padding: 10px 14px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  outline: none;
+}
+
+.movie-search:focus {
+  border-color: #4f46e5;
+}
+
+/* ---------- Year Group ---------- */
+.movie-group {
+  margin-bottom: 30px;
+}
+
+.movie-year {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+/* ---------- Movie Grid ---------- */
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+/* ---------- Movie Card ---------- */
+.movie-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+
+  /* Smooth hover effect */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.movie-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------- Movie Poster ---------- */
+.movie-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+/* ---------- Text ---------- */
+.movie-name {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 6px 0 2px;
+}
+
+.movie-type {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* ---------- Info Messages ---------- */
+.movie-info {
+  color: #555;
+}
+
+.movie-error {
+  color: red;
+}
