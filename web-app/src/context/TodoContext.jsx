@@ -7,10 +7,11 @@ const LOCAL_KEY = "todos";
 
 export function TodoProvider({ children }) {
   const [todos, setTodos] = useState([]);
+  const saved = localStorage.getItem(LOCAL_KEY);
 
   // Load from localStorage once
   useEffect(() => {
-    const saved = localStorage.getItem(LOCAL_KEY);
+    // const saved = localStorage.getItem(LOCAL_KEY);
     if (saved) {
       setTodos(JSON.parse(saved));
     }

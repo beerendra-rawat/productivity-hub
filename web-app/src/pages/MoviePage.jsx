@@ -13,7 +13,7 @@ export default function MoviePage() {
       setRawMovies([]);
       setError("");
       return;
-    }
+    }        
 
     setLoading(true);
     setError("");

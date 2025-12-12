@@ -51,6 +51,8 @@ export default function WeatherScreen() {
             placeholder="Enter city"
             value={city}
             onChangeText={setCity}
+            returnKeyType="search"
+            onSubmitEditing={handleSearch}
           />
 
           <TouchableOpacity style={styles.searchBtn} onPress={handleSearch}>

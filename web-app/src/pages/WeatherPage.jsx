@@ -27,7 +27,7 @@ export default function WeatherPage() {
       return;
     }
 
-    setResult(res.data);
+    setResult(res.data);                                   
   };
 
   return (

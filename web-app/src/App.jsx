@@ -20,6 +20,7 @@ export default function App() {
           </div>
 
           <ThemeToggle />
+
         </div>
       </nav>
 
