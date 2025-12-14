@@ -6,17 +6,23 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
+  TouchableWithoutFeedback,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { groupBy } from "../utils/helpers.js";
 
 export default function TodoScreen() {
   const [text, setText] = useState("");
   const [todos, setTodos] = useState([]);
-
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
+  const [expandedId, setExpandedId] = useState(null);
 
+  /* ---------- LOAD TODOS ---------- */
   useEffect(() => {
     loadTodos();
   }, []);
@@ -30,8 +36,11 @@ export default function TodoScreen() {
     if (saved) setTodos(JSON.parse(saved));
   };
 
+  /* ---------- ADD TODO ---------- */
   const addTodo = () => {
     if (!text.trim()) return;
+
+    Keyboard.dismiss();
 
     const newTodo = {
       id: Date.now().toString(),
@@ -43,6 +52,7 @@ export default function TodoScreen() {
     setText("");
   };
 
+  /* ---------- TOGGLE ---------- */
   const toggleTodo = (id) => {
     setTodos(
       todos.map((t) =>
@@ -51,17 +61,22 @@ export default function TodoScreen() {
     );
   };
 
+  /* ---------- DELETE ---------- */
   const deleteTodo = (id) => {
     setTodos(todos.filter((t) => t.id !== id));
   };
 
+  /* ---------- EDIT ---------- */
   const startEditing = (id, currentText) => {
     setEditingId(id);
     setEditText(currentText);
+    setExpandedId(null);
   };
 
   const saveTodo = (id) => {
     if (!editText.trim()) return;
+
+    Keyboard.dismiss();
 
     setTodos(
       todos.map((t) =>
@@ -73,89 +88,142 @@ export default function TodoScreen() {
     setEditText("");
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.todoItem}>
-      <TouchableOpacity
-        onPress={() => toggleTodo(item.id)}
-        style={styles.checkBox}
-      >
-        <View style={item.completed ? styles.checked : styles.unchecked} />
-      </TouchableOpacity>
+  /* ---------- GROUP TODOS ---------- */
+  const groupedTodos = groupBy(todos, "completed");
+  const pendingTodos = groupedTodos[false] || [];
+  const completedTodos = groupedTodos[true] || [];
 
-      {editingId === item.id ? (
-        <TextInput
-          style={[styles.todoText, styles.editInput]}
-          value={editText}
-          onChangeText={setEditText}
-          autoFocus
-        />
-      ) : (
-        <Text
-          style={[
-            styles.todoText,
-            item.completed && styles.completedText,
-          ]}
+  /* ---------- RENDER ITEM ---------- */
+  const renderItem = ({ item }) => {
+    const isExpanded = expandedId === item.id;
+    const isLongText = item.text.length > 80;
+
+    return (
+      <View style={styles.todoItem}>
+        <TouchableOpacity
+          onPress={() => toggleTodo(item.id)}
+          style={styles.checkBox}
         >
-          {item.text}
-        </Text>
-      )}
-
-      {editingId === item.id ? (
-        <TouchableOpacity onPress={() => saveTodo(item.id)}>
-          <Text style={styles.saveBtn}>Save</Text>
+          <View style={item.completed ? styles.checked : styles.unchecked} />
         </TouchableOpacity>
-      ) : (
-        <TouchableOpacity onPress={() => startEditing(item.id, item.text)}>
-          <Text style={styles.editBtn}>Edit</Text>
-        </TouchableOpacity>
-      )}
 
-      <TouchableOpacity onPress={() => deleteTodo(item.id)}>
-        <Text style={styles.deleteText}>✕</Text>
-      </TouchableOpacity>
-    </View>
-  );
+        <View style={{ flex: 1 }}>
+          {editingId === item.id ? (
+            <TextInput
+              style={[styles.todoText, styles.editInput]}
+              value={editText}
+              onChangeText={setEditText}
+              autoFocus
+              multiline
+              returnKeyType="done"
+              onSubmitEditing={() => saveTodo(item.id)}
+            />
+          ) : (
+            <>
+              <Text
+                numberOfLines={isExpanded ? undefined : 2}
+                style={[
+                  styles.todoText,
+                  item.completed && styles.completedText,
+                ]}
+              >
+                {item.text}
+              </Text>
 
-  return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <View style={styles.container}>
-        <Text style={styles.heading}>📝 Todo List</Text>
-
-        <View style={styles.inputRow}>
-          <TextInput
-            style={styles.input}
-            placeholder="Add a new todo..."
-            value={text}
-            onChangeText={setText}
-            onSubmitEditing={addTodo}
-          />
-
-          <TouchableOpacity style={styles.addBtn} onPress={addTodo}>
-            <Text style={styles.addBtnText}>Add</Text>
-          </TouchableOpacity>
+              {isLongText && (
+                <TouchableOpacity
+                  onPress={() =>
+                    setExpandedId(isExpanded ? null : item.id)
+                  }
+                >
+                  <Text style={styles.readMore}>
+                    {isExpanded ? "Read less" : "... Read more"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </>
+          )}
         </View>
 
-        <FlatList
-          data={todos}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-        />
+        {editingId === item.id ? (
+          <TouchableOpacity onPress={() => saveTodo(item.id)}>
+            <Text style={styles.saveBtn}>Save</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            onPress={() => startEditing(item.id, item.text)}
+          >
+            <Text style={styles.editBtn}>Edit</Text>
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity onPress={() => deleteTodo(item.id)}>
+          <Text style={styles.deleteText}>✕</Text>
+        </TouchableOpacity>
       </View>
+    );
+  };
+
+  /* ================= UI ================= */
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <View style={styles.container}>
+            <Text style={styles.heading}>📝 Todo List</Text>
+
+            <View style={styles.inputRow}>
+              <TextInput
+                style={styles.input}
+                placeholder="Add a new todo..."
+                value={text}
+                onChangeText={setText}
+                returnKeyType="done"
+                onSubmitEditing={addTodo}
+              />
+
+              <TouchableOpacity style={styles.addBtn} onPress={addTodo}>
+                <Text style={styles.addBtnText}>Add</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.SecondHeading}>Pending</Text>
+            <FlatList
+              data={pendingTodos}
+              keyExtractor={(item) => item.id}
+              renderItem={renderItem}
+              keyboardShouldPersistTaps="handled"
+            />
+
+            <Text style={styles.SecondHeading}>Completed</Text>
+            <FlatList
+              data={completedTodos}
+              keyExtractor={(item) => item.id}
+              renderItem={renderItem}
+              keyboardShouldPersistTaps="handled"
+            />
+          </View>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 }
 
+/* ================= STYLES ================= */
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#eef2ff", // Match screen background
+    backgroundColor: "#eef2ff",
   },
 
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#eef2ff",
+    backgroundColor: '#eef2ff',
   },
 
   heading: {
@@ -163,6 +231,13 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     textAlign: "center",
     marginBottom: 18,
+    color: "#3b3b98",
+  },
+
+  SecondHeading: {
+    fontSize: 22,
+    fontWeight: "700",
+    marginVertical: 12,
     color: "#3b3b98",
   },
 
@@ -197,7 +272,7 @@ const styles = StyleSheet.create({
 
   todoItem: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     backgroundColor: "#ffffff",
     padding: 14,
     borderRadius: 14,
@@ -214,6 +289,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
+    marginTop: 4,
   },
 
   unchecked: {
@@ -229,7 +305,6 @@ const styles = StyleSheet.create({
   },
 
   todoText: {
-    flex: 1,
     fontSize: 16,
     fontWeight: "500",
     color: "#2d3436",
@@ -240,16 +315,23 @@ const styles = StyleSheet.create({
     color: "#888",
   },
 
+  readMore: {
+    color: "#4b7bec",
+    fontSize: 14,
+    marginTop: 4,
+    fontWeight: "600",
+  },
+
   editBtn: {
     fontSize: 16,
     color: "#0984e3",
-    marginRight: 10,
+    marginLeft: 10,
   },
 
   saveBtn: {
     fontSize: 16,
     color: "green",
-    marginRight: 10,
+    marginLeft: 10,
     fontWeight: "700",
   },
 
@@ -257,11 +339,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "#e74c3c",
     fontWeight: "700",
+    marginLeft: 8,
   },
 
   editInput: {
     backgroundColor: "#e8f0ff",
-    padding: 4,
+    padding: 6,
     borderRadius: 6,
   },
 });

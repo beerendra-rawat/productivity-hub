@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { apiFetch } from "../utils/helpers.js";
 import "../styles/WeatherPage.css";
 
@@ -10,6 +10,42 @@ export default function WeatherPage() {
 
   const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
 
+  /* 🔹 Load weather using current location */
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setError("Geolocation not supported");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        loadWeatherByCoords(latitude, longitude);
+      },
+      () => {
+        setError("Location permission denied");
+      }
+    );
+  }, []);
+
+  const loadWeatherByCoords = async (lat, lon) => {
+    setLoading(true);
+    setError("");
+
+    const url = `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${lat},${lon}&aqi=no`;
+    const res = await apiFetch(url);
+
+    setLoading(false);
+
+    if (res.error) {
+      setError(res.error);
+      return;
+    }
+
+    setResult(res.data);
+  };
+
+  /* 🔹 Search by city name */
   const handleSearch = async () => {
     if (!city.trim()) return;
 
@@ -17,7 +53,9 @@ export default function WeatherPage() {
     setError("");
     setResult(null);
 
-    const url = `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${encodeURIComponent(city)}&aqi=no`;
+    const url = `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${encodeURIComponent(
+      city
+    )}&aqi=no`;
 
     const res = await apiFetch(url);
     setLoading(false);
@@ -27,12 +65,12 @@ export default function WeatherPage() {
       return;
     }
 
-    setResult(res.data);                                   
+    setResult(res.data);
   };
 
   return (
     <div className="weather-page">
-      <h2 className="weather-title">Weather Search</h2>
+      <h2 className="weather-title">Weather</h2>
 
       <div className="weather-search-box">
         <input
@@ -40,11 +78,7 @@ export default function WeatherPage() {
           value={city}
           onChange={(e) => setCity(e.target.value)}
           placeholder="Enter city name"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleSearch();
-            }
-          }}
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
         />
         <button className="weather-button" onClick={handleSearch}>
           Search
@@ -56,7 +90,7 @@ export default function WeatherPage() {
 
       {result && (
         <div className="weather-card">
-          <h3 className="weather-location">
+          <h3>
             {result.location.name}, {result.location.region}
           </h3>
 
@@ -65,26 +99,20 @@ export default function WeatherPage() {
 
           <div className="weather-main">
             <img
-              className="weather-icon"
               src={`https:${result.current.condition.icon}`}
-              alt="Weather Icon"
+              alt="Weather"
             />
             <div>
               <p className="weather-temp">{result.current.temp_c}°C</p>
-              <p className="weather-condition">{result.current.condition.text}</p>
+              <p>{result.current.condition.text}</p>
             </div>
           </div>
 
-          <div className="weather-details">
-            <p><strong>Feels Like:</strong> {result.current.feelslike_c}°C</p>
-            <p>
-              <strong>Wind:</strong> {result.current.wind_kph} kph (
-              {result.current.wind_dir})
-            </p>
-            <p><strong>Humidity:</strong> {result.current.humidity}%</p>
-            <p><strong>Visibility:</strong> {result.current.vis_km} km</p>
-            <p><strong>UV Index:</strong> {result.current.uv}</p>
-          </div>
+          <p><strong>Feels Like:</strong> {result.current.feelslike_c}°C</p>
+          <p><strong>Wind:</strong> {result.current.wind_kph} kph</p>
+          <p><strong>Humidity:</strong> {result.current.humidity}%</p>
+          <p><strong>Visibility:</strong> {result.current.vis_km} km</p>
+          <p><strong>UV:</strong> {result.current.uv}</p>
         </div>
       )}
     </div>

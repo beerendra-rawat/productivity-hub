@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import SplashScreen from "./src/splash/SplashScreen";
 import BottomTabs from "./src/navigation/BottomTab";
 
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -14,6 +15,7 @@ export default function App() {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           
           <Stack.Screen name="Splash" component={SplashScreen} />
+          
           <Stack.Screen name="MainApp" component={BottomTabs} />
 
         </Stack.Navigator>

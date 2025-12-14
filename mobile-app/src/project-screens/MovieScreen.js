@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,18 +7,44 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { apiFetch, debounce, groupBy } from "../utils/helpers";
 
+/* ================= CONSTANTS ================= */
 const OMDB_KEY = "521d81bc";
+const DUMMY_IMAGE = require("../../assets/cinema.jpg");
 
+/* ================= MAIN COMPONENT ================= */
 export default function MovieScreen() {
+  /* ---------- STATES ---------- */
   const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
-  const [error, setError] = useState("");
+  const [popularMovies, setPopularMovies] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
+  /* ---------- LOAD POPULAR MOVIES ---------- */
+  useEffect(() => {
+    loadPopularMovies();
+  }, []);
+
+  const loadPopularMovies = async () => {
+    try {
+      const res = await fetch(
+        `https://www.omdbapi.com/?apikey=${OMDB_KEY}&s=avengers`
+      );
+      const data = await res.json();
+      if (data.Search) setPopularMovies(data.Search);
+    } catch {
+      setError("Network error");
+    }
+  };
+
+  /* ---------- SEARCH MOVIES ---------- */
   const searchMovies = async (text) => {
     if (!text.trim()) {
       setMovies([]);
@@ -29,101 +55,134 @@ export default function MovieScreen() {
     setLoading(true);
     setError("");
 
-    const url = `https://www.omdbapi.com/?apikey=${OMDB_KEY}&s=${encodeURIComponent(
-      text
-    )}`;
+    try {
+      const res = await fetch(
+        `https://www.omdbapi.com/?apikey=${OMDB_KEY}&s=${encodeURIComponent(
+          text
+        )}`
+      );
+      const data = await res.json();
 
-    const res = await apiFetch(url);
-    setLoading(res.loading);
-
-    if (res.error) {
-      setError(res.error);
-      setMovies([]);
-    } else if (res.data?.Response === "False") {
-      setError(res.data.Error || "No movies found");
-      setMovies([]);
-    } else {
-      setMovies(res.data.Search || []);
+      if (data.Response === "False") {
+        setError(data.Error);
+        setMovies([]);
+      } else {
+        setMovies(data.Search || []);
+      }
+    } catch {
+      setError("Network error");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const debouncedSearch = useMemo(() => debounce(searchMovies, 500), []);
+  /* ---------- MOVIE CARD ---------- */
+  const MovieCard = ({ item }) => {
+    const [imgError, setImgError] = useState(false);
 
-  useEffect(() => {
-    debouncedSearch(query);
-  }, [query, debouncedSearch]);
+    return (
+      <View style={styles.movieCard}>
+        <Image
+          source={
+            !imgError && item.Poster && item.Poster !== "N/A"
+              ? { uri: item.Poster }
+              : DUMMY_IMAGE
+          }
+          onError={() => setImgError(true)}
+          style={styles.poster}
+        />
 
-  const grouped = groupBy(movies, "Year");
-  const flatGrouped = Object.entries(grouped).flatMap(([year, arr]) =>
-    arr.map((movie) => ({ ...movie, _year: year }))
-  );
-
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Image
-        source={{
-          uri:
-            item.Poster !== "N/A"
-              ? item.Poster
-              : "https://via.placeholder.com/100x150?text=No+Image",
-        }}
-        style={styles.poster}
-      />
-
-      <View style={styles.infoWrapper}>
-        <Text style={styles.movieTitle} numberOfLines={2}>
-          {item.Title}
-        </Text>
-        <Text style={styles.metaText}>Year: {item._year}</Text>
-        <Text style={styles.metaText}>Type: {item.Type}</Text>
+        <View style={styles.info}>
+          <Text style={styles.title} numberOfLines={2}>
+            {item.Title}
+          </Text>
+          <Text style={styles.meta}>Year: {item.Year}</Text>
+          <Text style={styles.meta}>Type: {item.Type}</Text>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
+  /* ================= UI ================= */
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <View style={styles.container}>
-        <Text style={styles.heading}>🎬 Movie Explorer</Text>
+      {/* Tap anywhere → keyboard hide */}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <View style={styles.container}>
+            <Text style={styles.heading}>🎬 Movie Explorer</Text>
 
-        <View style={styles.searchRow}>
-          <TextInput
-            style={styles.input}
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Search movies..."
-            placeholderTextColor="#777"
-          />
+            {/* ---------- SEARCH BAR ---------- */}
+            <View style={styles.searchRow}>
+              <TextInput
+                style={styles.input}
+                value={query}
+                onChangeText={setQuery}
+                placeholder="Search movies..."
+                returnKeyType="search"
+                onSubmitEditing={() => {
+                  Keyboard.dismiss();
+                  searchMovies(query);
+                }}
+              />
 
-          <TouchableOpacity
-            style={styles.searchBtn}
-            onPress={() => searchMovies(query)}
-          >
-            <Text style={styles.searchBtnText}>Search</Text>
-          </TouchableOpacity>
-        </View>
+              <TouchableOpacity
+                style={styles.searchBtn}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  searchMovies(query);
+                }}
+              >
+                <Text style={styles.searchBtnText}>Search</Text>
+              </TouchableOpacity>
+            </View>
 
-        {loading && <Text style={styles.loading}>Loading...</Text>}
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+            {loading && <Text style={styles.center}>Loading...</Text>}
+            {error !== "" && <Text style={styles.error}>{error}</Text>}
 
-        {!loading && !error && movies.length === 0 && (
-          <Text style={styles.emptyText}>Start typing to find movies 🎥</Text>
-        )}
+            {/* ---------- POPULAR MOVIES ---------- */}
+            {query.trim() === "" && (
+              <>
+                <Text style={styles.sectionTitle}>🔥 Popular Movies</Text>
+                <FlatList
+                  data={popularMovies}
+                  keyExtractor={(item, index) =>
+                    item.imdbID + "_" + index   // ✅ FIXED KEY
+                  }
+                  renderItem={({ item }) => <MovieCard item={item} />}
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                />
+              </>
+            )}
 
-        <FlatList
-          data={flatGrouped}
-          keyExtractor={(item, index) => item.imdbID + "-" + index}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-        />
-      </View>
+            {/* ---------- SEARCH RESULTS ---------- */}
+            {query.trim() !== "" && (
+              <FlatList
+                data={movies}
+                keyExtractor={(item, index) =>
+                  item.imdbID + "_" + index   // ✅ FIXED KEY
+                }
+                renderItem={({ item }) => <MovieCard item={item} />}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              />
+            )}
+          </View>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 }
 
+/* ================= OLD STYLES ================= */
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#eef2ff", // same as screen background
+    backgroundColor: "#eef2ff",
   },
 
   container: {
@@ -138,6 +197,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#3b3b98",
     marginBottom: 16,
+  },
+
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#3b3b98",
+    marginBottom: 10,
   },
 
   searchRow: {
@@ -168,7 +234,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  loading: {
+  center: {
     textAlign: "center",
     marginVertical: 10,
     fontSize: 16,
@@ -177,27 +243,15 @@ const styles = StyleSheet.create({
   error: {
     textAlign: "center",
     color: "red",
-    fontSize: 16,
     marginVertical: 8,
   },
 
-  emptyText: {
-    textAlign: "center",
-    fontSize: 16,
-    color: "#666",
-    marginTop: 20,
-  },
-
-  card: {
+  movieCard: {
     flexDirection: "row",
-    padding: 14,
-    borderRadius: 14,
     backgroundColor: "#fff",
+    borderRadius: 14,
+    padding: 14,
     marginVertical: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
     elevation: 4,
   },
 
@@ -208,19 +262,19 @@ const styles = StyleSheet.create({
     marginRight: 14,
   },
 
-  infoWrapper: {
+  info: {
     flex: 1,
-    justifyContent: "space-between",
+    justifyContent: "center",
   },
 
-  movieTitle: {
+  title: {
     fontSize: 18,
     fontWeight: "700",
     color: "#2d3436",
     marginBottom: 6,
   },
 
-  metaText: {
+  meta: {
     fontSize: 14,
     color: "#636e72",
   },

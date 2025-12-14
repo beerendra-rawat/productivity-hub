@@ -1,15 +1,88 @@
+// import React, { createContext, useContext, useEffect, useState } from "react";
+// import { groupBy } from "../utils/helpers.js";
+
+// const TodoContext = createContext();
+
+// const LOCAL_KEY = "todos";
+
+// export function TodoProvider({ children }) {
+//   const [todos, setTodos] = useState([]);
+  
+//   const saved = localStorage.getItem(LOCAL_KEY);
+
+//   // Load from localStorage once
+//   useEffect(() => {
+//     // const saved = localStorage.getItem(LOCAL_KEY);
+//     if (saved) {
+//       setTodos(JSON.parse(saved));
+//     }
+//   }, []);
+
+//   // Save to localStorage whenever todos change
+//   useEffect(() => {
+//     localStorage.setItem(LOCAL_KEY, JSON.stringify(todos));
+//   }, [todos]);
+
+//   const addTodo = (text) => {
+//     if (!text.trim()) return;
+//     setTodos((prev) => [
+//       ...prev,
+//       { id: Date.now().toString(), text: text.trim(), status: "pending" },
+//     ]);
+//   };
+
+//   const deleteTodo = (id) => {
+//     setTodos((prev) => prev.filter((t) => t.id !== id));
+//   };
+
+//   const toggleTodo = (id) => {
+//     setTodos((prev) =>
+//       prev.map((t) =>
+//         t.id === id
+//           ? { ...t, status: t.status === "pending" ? "completed" : "pending" }
+//           : t
+//       )
+//     );
+//   };
+
+//   const editTodo = (id, newText) => {
+//     setTodos((prev) =>
+//       prev.map((t) => (t.id === id ? { ...t, text: newText } : t))
+//     );
+//   };
+
+//   const groupedTodos = groupBy(todos, "status");
+
+//   const value = {
+//     todos,
+//     groupedTodos,
+//     addTodo,
+//     deleteTodo,
+//     toggleTodo,
+//     editTodo,
+//   };
+
+//   return <TodoContext.Provider value={value}>{children}</TodoContext.Provider>;
+// }
+
+// export function useTodos() {
+//   return useContext(TodoContext);
+// }
+
+
+
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { groupBy } from "../utils/helpers.js";
 
 const TodoContext = createContext();
-
 const LOCAL_KEY = "todos";
 
 export function TodoProvider({ children }) {
   const [todos, setTodos] = useState([]);
-  const saved = localStorage.getItem(LOCAL_KEY);
 
-  // Load from localStorage once
+  const saved = localStorage.getItem(LOCAL_KEY);
+  
+  // Load todos from localStorage (once)
   useEffect(() => {
     // const saved = localStorage.getItem(LOCAL_KEY);
     if (saved) {
@@ -17,7 +90,7 @@ export function TodoProvider({ children }) {
     }
   }, []);
 
-  // Save to localStorage whenever todos change
+  // Save todos to localStorage
   useEffect(() => {
     localStorage.setItem(LOCAL_KEY, JSON.stringify(todos));
   }, [todos]);
@@ -26,7 +99,11 @@ export function TodoProvider({ children }) {
     if (!text.trim()) return;
     setTodos((prev) => [
       ...prev,
-      { id: Date.now().toString(), text: text.trim(), status: "pending" },
+      {
+        id: Date.now().toString(),
+        text: text.trim(),
+        status: "pending",
+      },
     ]);
   };
 
@@ -38,7 +115,10 @@ export function TodoProvider({ children }) {
     setTodos((prev) =>
       prev.map((t) =>
         t.id === id
-          ? { ...t, status: t.status === "pending" ? "completed" : "pending" }
+          ? {
+              ...t,
+              status: t.status === "pending" ? "completed" : "pending",
+            }
           : t
       )
     );
@@ -46,22 +126,28 @@ export function TodoProvider({ children }) {
 
   const editTodo = (id, newText) => {
     setTodos((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, text: newText } : t))
+      prev.map((t) =>
+        t.id === id ? { ...t, text: newText } : t
+      )
     );
   };
 
   const groupedTodos = groupBy(todos, "status");
 
-  const value = {
-    todos,
-    groupedTodos,
-    addTodo,
-    deleteTodo,
-    toggleTodo,
-    editTodo,
-  };
-
-  return <TodoContext.Provider value={value}>{children}</TodoContext.Provider>;
+  return (
+    <TodoContext.Provider
+      value={{
+        todos,
+        groupedTodos,
+        addTodo,
+        deleteTodo,
+        toggleTodo,
+        editTodo,
+      }}
+    >
+      {children}
+    </TodoContext.Provider>
+  );
 }
 
 export function useTodos() {

@@ -84,6 +84,22 @@
   border: 1px solid #d1d5db;
 }
 
+/* ----------- Read more ----------- */
+.read-more-btn {
+  background: none;
+  border: none;
+  color: #4b7bec;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 6px;
+  font-weight: 600;
+}
+
+.read-more-btn:hover {
+  text-decoration: underline;
+}
+
+
 /* ----------- Buttons ----------- */
 .todo-btn {
   padding: 6px 10px;
