@@ -100,11 +100,12 @@ export default function TodoScreen() {
 
     return (
       <View style={styles.todoItem}>
+        {/* CHECKBOX */}
         <TouchableOpacity
           onPress={() => toggleTodo(item.id)}
           style={styles.checkBox}
         >
-          <View style={item.completed ? styles.checked : styles.unchecked} />
+          {item.completed && <Text style={styles.checkMark}>✓</Text>}
         </TouchableOpacity>
 
         <View style={{ flex: 1 }}>
@@ -223,7 +224,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#eef2ff',
   },
 
   heading: {
@@ -292,16 +292,10 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
-  unchecked: {
-    width: 14,
-    height: 14,
-  },
-
-  checked: {
-    width: 14,
-    height: 14,
-    backgroundColor: "#4b7bec",
-    borderRadius: 3,
+  checkMark: {
+    color: "#4b7bec",
+    fontSize: 18,
+    fontWeight: "900",
   },
 
   todoText: {
