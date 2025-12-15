@@ -9,26 +9,23 @@ import {
 } from "react-native";
 
 const { width, height } = Dimensions.get("window");
-
 const splashImage = require("../../assets/splash1.png");
 
 export default function SplashScreen({ navigation }) {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
 
-  const startFade = () => {
-    Animated.timing(fadeAnim, {
+  useEffect(() => {
+    // Fade animation
+    Animated.timing(opacity, {
       toValue: 1,
       duration: 800,
       useNativeDriver: true,
     }).start();
-  };
 
-  useEffect(() => {
-    startFade();
-
+    // Auto navigate after 10 seconds
     const timer = setTimeout(() => {
       navigation.replace("MainApp");
-    }, 10000);
+    }, 6000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -37,51 +34,36 @@ export default function SplashScreen({ navigation }) {
     <View style={styles.container}>
       <Animated.Image
         source={splashImage}
-        style={[styles.image, { opacity: fadeAnim }]}
-        resizeMode="cover"
+        style={[styles.image, { opacity }]}
       />
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.btn}
-          onPress={() => navigation.replace("MainApp")}
-        >
-          <Text style={styles.btnText}>Get Started</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.replace("MainApp")}
+      >
+        <Text style={styles.text}>Get Started</Text>
+      </TouchableOpacity>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
-    justifyContent: "center",
-    alignItems: "center",
   },
-
   image: {
-    width: width,
-    height: height,
+    width,
+    height,
   },
-
-  buttonContainer: {
+  button: {
     position: "absolute",
     bottom: 80,
-    width: "100%",
-    alignItems: "center",
-  },
-
-  btn: {
+    alignSelf: "center",
     backgroundColor: "#4b7bec",
     paddingVertical: 14,
     paddingHorizontal: 50,
     borderRadius: 30,
-    elevation: 6,
   },
-
-  btnText: {
+  text: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "700",
