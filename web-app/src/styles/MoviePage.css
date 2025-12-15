@@ -13,7 +13,8 @@
 .movie-search-box {
   display: flex;
   gap: 10px;
-  flex-wrap: wrap; /* ✅ fixes small screen */
+  flex-wrap: wrap;
+  /* ✅ fixes small screen */
 }
 
 .movie-search {
@@ -55,6 +56,10 @@
   transition: 0.2s;
 }
 
+.movie-card>h4 {
+  color: black;
+}
+
 .movie-card:hover {
   transform: scale(1.05);
 }
@@ -73,7 +78,7 @@
 
 .movie-type {
   font-size: 14px;
-  color: #6b7280;
+  color: black;
 }
 
 .movie-year {
